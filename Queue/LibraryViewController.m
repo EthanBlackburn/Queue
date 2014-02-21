@@ -20,7 +20,7 @@
 @synthesize libraryData;
 @synthesize selectedSongs;
 @synthesize songButtons;
-@synthesize doneButton;
+
 
 
 -(IBAction)done:(id)sender

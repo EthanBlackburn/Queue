@@ -13,7 +13,6 @@
 		AA45FEE818779C2E0094F0EC /* BTLEViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA45FEE718779C2E0094F0EC /* BTLEViewController.m */; };
 		AA595CA4186D3E0B00426227 /* SongStruct.m in Sources */ = {isa = PBXBuildFile; fileRef = AA595CA3186D3E0B00426227 /* SongStruct.m */; };
 		AA595CAB186DAE4700426227 /* Mobile_Signal.png in Resources */ = {isa = PBXBuildFile; fileRef = AA595CAA186DAE4700426227 /* Mobile_Signal.png */; };
-		AA65F80B1895FF2400B08CF0 /* MediaSourceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA65F80A1895FF2400B08CF0 /* MediaSourceViewController.m */; };
 		AA74EF8218959E4E00394B0D /* SCYouViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA74EF8118959E4E00394B0D /* SCYouViewController.m */; };
 		AA74EF851895A03F00394B0D /* SCSearchViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AA74EF841895A03F00394B0D /* SCSearchViewController.m */; };
 		AA87037818626EB00062A25C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA87037718626EB00062A25C /* Foundation.framework */; };
@@ -72,8 +71,6 @@
 		AA595CA2186D3E0B00426227 /* SongStruct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SongStruct.h; sourceTree = "<group>"; };
 		AA595CA3186D3E0B00426227 /* SongStruct.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SongStruct.m; sourceTree = "<group>"; };
 		AA595CAA186DAE4700426227 /* Mobile_Signal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Mobile_Signal.png; sourceTree = "<group>"; };
-		AA65F8091895FF2400B08CF0 /* MediaSourceViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaSourceViewController.h; sourceTree = "<group>"; };
-		AA65F80A1895FF2400B08CF0 /* MediaSourceViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MediaSourceViewController.m; sourceTree = "<group>"; };
 		AA74EF8018959E4E00394B0D /* SCYouViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCYouViewController.h; sourceTree = "<group>"; };
 		AA74EF8118959E4E00394B0D /* SCYouViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SCYouViewController.m; sourceTree = "<group>"; };
 		AA74EF831895A03F00394B0D /* SCSearchViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SCSearchViewController.h; sourceTree = "<group>"; };
@@ -167,8 +164,6 @@
 			isa = PBXGroup;
 			children = (
 				AA74EF7F18959E2500394B0D /* SoundCloudView */,
-				AA65F8091895FF2400B08CF0 /* MediaSourceViewController.h */,
-				AA65F80A1895FF2400B08CF0 /* MediaSourceViewController.m */,
 			);
 			name = Sources;
 			sourceTree = "<group>";
@@ -354,7 +349,7 @@
 				ORGANIZATIONNAME = Ethan;
 				TargetAttributes = {
 					AA87037318626EB00062A25C = {
-						DevelopmentTeam = FJ9NM7ENY8;
+						DevelopmentTeam = 8X5P8C448L;
 						SystemCapabilities = {
 							com.apple.BackgroundModes = {
 								enabled = 1;
@@ -452,7 +447,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AA65F80B1895FF2400B08CF0 /* MediaSourceViewController.m in Sources */,
 				AA87038E18626EB00062A25C /* QueueViewController.m in Sources */,
 				AA45FE951871FC700094F0EC /* LibraryViewController.m in Sources */,
 				AA595CA4186D3E0B00426227 /* SongStruct.m in Sources */,

@@ -13,9 +13,12 @@
             artist,
             votes,
             mediaURL,
-            artwork;
+            artwork,
+            artworkURL,
+            type,
+            tinyArtwork;
 
--(id)initWithTitle:(NSString *)strTitle artist:(NSString *)strArtist voteCount:(NSInteger) count songURL:(NSURL *)url artwork:(UIImage *)art
+-(id)initWithTitle:(NSString *)strTitle artist:(NSString *)strArtist voteCount:(NSInteger) count songURL:(NSURL *)url artwork:(UIImage *)art type:(NSString *)source
 {
     self = [super init];
     
@@ -25,6 +28,7 @@
     self.strIdentifier = self.identifier;
     self.mediaURL = url;
     self.artwork = art;
+    self.type = source;
     return self;
 }
 
@@ -37,6 +41,10 @@
         self.title = [coder decodeObjectForKey:@"ASCTitle"];
         self.artist = [coder decodeObjectForKey:@"ASCArtist"];
         self.votes = [coder decodeIntegerForKey:@"ASCVotes"];
+        self.type = [coder decodeObjectForKey:@"ASCType"];
+        self.artworkURL = [coder decodeObjectForKey:@"ASCArtURL"];
+        //set artwork
+        [self imageFromURL:artworkURL];
         self.strIdentifier = self.identifier;
     }
     return self;
@@ -45,6 +53,12 @@
 -(void)Vote
 {
     self.votes++;
+}
+
+-(void)imageFromURL:(NSURL *)url{
+    NSData *imageData = [NSData dataWithContentsOfURL:url];
+    self.artwork = [UIImage imageWithData:imageData];
+    
 }
 
 -(NSString *)identifier
@@ -56,6 +70,9 @@
     [coder encodeObject:self.title forKey:@"ASCTitle"];
     [coder encodeObject:self.artist forKey:@"ASCArtist"];
     [coder encodeInteger:self.votes forKey:@"ASCVotes"];
+    [coder encodeObject:self.type forKey:@"ASCType"];
+    [coder encodeObject:self.artworkURL forKey:@"ASCArtURL"];
+    self.artwork = nil;
 }
 
 @end

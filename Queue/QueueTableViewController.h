@@ -8,9 +8,13 @@
 
 #import <MediaPlayer/MediaPlayer.h>
 #import "LibraryViewController.h"
+#import "SCSearchViewController.h"
+#import "SCYouViewController.h"
+#import "BTLEViewController.h"
+
 #import "SongStruct.h"
 
-@interface QueueTableViewController : UITableViewController < MPMediaPickerControllerDelegate, UITableViewDelegate, UITabBarDelegate, UITableViewDataSource>
+@interface QueueTableViewController : UITableViewController < MPMediaPickerControllerDelegate, UITableViewDelegate, UITabBarDelegate, UITableViewDataSource, LibraryViewControllerDelegate, SCYouViewControllerDelegate>
 {
     IBOutlet UITableView *currentQueue;
     IBOutlet UIBarButtonItem *addMusicButton;
@@ -26,6 +30,7 @@
 @property (nonatomic) UIButton *goToSC;
 @property (nonatomic) UIView *shadow;
 @property (nonatomic) UIView *selectionBox;
+@property (nonatomic) BTLEViewController *btController;
 
 -(void)refreshTable;
 -(void)addSong:(SongStruct *)song;

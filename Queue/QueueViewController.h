@@ -15,28 +15,13 @@
 
 @interface QueueViewController : UIViewController < MPMediaPickerControllerDelegate, AVAudioPlayerDelegate, UITabBarDelegate>
 {
-    
-    IBOutlet UIImageView *artworkItem;
-    NSMutableArray *songQueue;
-    AVPlayer *appPlayer;
-    NSURL *soundFileURL;
-    IBOutlet UILabel *artistLabel;
-    NSUInteger voteCount;
-    SongStruct *nowPlayingItem;
-    IBOutlet UILabel *nowPlayingLabel;
-    IBOutlet UILabel *minLabel;
-    IBOutlet UILabel *maxLabel;
-    IBOutlet UIButton *pausePlay;
-    IBOutlet UIProgressView *songProgress;
-    BOOL playing;
-    BOOL interruptedOnPlayback;
     NSTimer *audioTimer;
     
 }
 
 @property (nonatomic) IBOutlet UIImageView *artworkItem;
 @property (nonatomic) NSMutableArray *songQueue;
-@property (nonatomic) AVPlayer *appPlayer;
+@property (nonatomic) AVAudioPlayer *appPlayer;
 @property (nonatomic) NSURL *soundFileURL;
 @property (nonatomic,readwrite) NSUInteger voteCount;
 @property (nonatomic,copy) SongStruct *nowPlayingItem;

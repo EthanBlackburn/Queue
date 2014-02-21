@@ -16,7 +16,6 @@
 @property (nonatomic) NSArray *libraryData;
 @property (nonatomic) NSMutableArray *selectedSongs;
 @property (nonatomic) NSMutableArray *songButtons;
-@property (nonatomic) IBOutlet UIBarButtonItem *doneButton;
 
 -(IBAction)done:(id)sender;
 -(IBAction)addHandler:(id)sender;

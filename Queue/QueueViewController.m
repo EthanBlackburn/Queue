@@ -109,10 +109,10 @@
                         selector: @selector(handleRouteChange:)
                          name: AVAudioSessionRouteChangeNotification
                             object: appPlayer];
-    [[NSNotificationCenter defaultCenter] addObserver:self
+    /*[[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(audioPlayerDidFinishPlaying:)
                                                  name:AVPlayerItemDidPlayToEndTimeNotification
-                                               object:appPlayer.currentItem];
+                                               object:appPlayer.currentItem];*/
     
     /*[notificationCenter addObserver: self
                           selector: @selector(handleInterruption:)
@@ -189,10 +189,10 @@
 }
 
 -(void)audioProgressUpdate{
-    if (appPlayer != nil){
-        double currentTime = CMTimeGetSeconds(appPlayer.currentItem.currentTime);
-        double duration = CMTimeGetSeconds(appPlayer.currentItem.duration);
-        NSLog(@"progress: %f",currentTime/duration);
+    
+    if (appPlayer.playing){
+        double currentTime = appPlayer.duration;
+        double duration = appPlayer.currentTime;
         [songProgress setProgress:currentTime/duration];
         minLabel.text = [NSString stringWithFormat: @"%02d:%02d", (int)currentTime / 60, (int)currentTime % 60];
         maxLabel.text = [NSString stringWithFormat: @"%02d:%02d", (int)duration / 60, (int)duration % 60];
@@ -202,8 +202,8 @@
 -(IBAction)pauseOrPlayMusic:(id)sender
 {
     
-    if(appPlayer.currentItem != nil){
-        if(appPlayer.rate != 0.0f){
+    if(appPlayer != nil){
+        if(appPlayer.playing){
             [appPlayer pause];
             [pausePlay setImage:[UIImage imageNamed:@"play_button.png"] forState:UIControlStateNormal];
         }
@@ -218,12 +218,24 @@
     if([songQueue count] > 0){
         NSLog(@"Next song");
         SongStruct *song = [songQueue objectAtIndex:0];
-        
-        AVAsset *songAsset = [AVAsset assetWithURL:[song mediaURL]];
-        AVPlayerItem *nextItem = [[AVPlayerItem alloc] initWithAsset:songAsset];
-        appPlayer = [AVPlayer playerWithPlayerItem:nextItem];
-        [appPlayer addObserver:self forKeyPath:@"status" options:0 context:nil]; // add observer for player
-        [appPlayer setVolume: 1.0];
+        if([song.type isEqual:@"SC"]){
+            SCAccount *account = [SCSoundCloud account];
+            
+            [SCRequest performMethod:SCRequestMethodGET
+                          onResource:song.mediaURL
+                     usingParameters:nil
+                         withAccount:account
+              sendingProgressHandler:nil
+                     responseHandler:^(NSURLResponse *response, NSData *data, NSError *error) {
+                         NSError *playerError;
+                         
+                         appPlayer = [[AVAudioPlayer alloc] initWithData:data error:&playerError];
+                         [appPlayer prepareToPlay];
+                         [appPlayer play];
+                         [appPlayer addObserver:self forKeyPath:@"status" options:0 context:nil]; // add observer for player
+                         [appPlayer setVolume: 1.0];
+                     }];
+        }
         
         SongStruct *currentItem = [songQueue objectAtIndex:0];
         nowPlayingItem = currentItem;
@@ -274,42 +286,18 @@
 	if (mediaItemCollection) {
 
         [songQueue addObjectsFromArray:mediaItemCollection];
-        //if not playing
-        if(appPlayer.currentItem == nil){
+        NSLog(@"%@",[songQueue objectAtIndex:0]);
+        //if not playing or hasnt been initiated
+        if(!appPlayer || !appPlayer.playing){
+            NSLog(@"next song");
             [self nextSong];
+            
         }
             
     }
     
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
-{
-    if ([object isKindOfClass:[AVPlayer class]])
-    {
-        AVPlayer *item = (AVPlayer *)object;
-        
-        if ([keyPath isEqualToString:@"status"])
-        {
-            switch(item.status)
-            {
-                case AVPlayerItemStatusFailed:
-                    NSLog(@"AV player item failed");
-                    //skip to next song if current song failed
-                    [songQueue removeObjectAtIndex:0];
-                    [self nextSong];
-                case AVPlayerItemStatusReadyToPlay:
-                    [appPlayer play];
-                    audioTimer = [NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(audioProgressUpdate) userInfo:nil repeats:YES];
-                    NSLog(@"player item status is ready to play");
-                    break;
-                case AVPlayerItemStatusUnknown:
-                    NSLog(@"player item status is unknown");
-                    break;
-            }
-        }
-    }
-}
 
 @end
 

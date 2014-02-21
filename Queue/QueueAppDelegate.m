@@ -16,8 +16,8 @@
 
 + (void) initialize
 {
-    [SCSoundCloud setClientID:@""
-                       secret:@""
+    [SCSoundCloud setClientID:@"105963b586ee9e7633eef11e29ee5e20"
+                       secret:@"c178f92829c5d1e342989adbb2cc5ad4"
                   redirectURL:[NSURL URLWithString:@"queue://oauth"]];
 }
 
@@ -46,7 +46,6 @@
     //initialize all of QVC's data required to function
     [leftPanel QVC].myLibrary = [[NSMutableArray alloc] init];
     [leftPanel QVC].songQueue = [[NSMutableArray alloc] init];
-    [leftPanel QVC].appPlayer = [[AVPlayer alloc] init];
     
     //initialize all of QTVC's data required to function
     [leftPanel QTVC].addedSongs = [[NSMutableDictionary alloc] init];
@@ -60,7 +59,7 @@
     for (MPMediaItem *song in itemsFromGenericQuery) {
         NSString *tempTitle = [NSString stringWithFormat:NSLocalizedString([song valueForProperty:MPMediaItemPropertyTitle],@"title")];
         NSString *tempArtist = [NSString stringWithFormat:NSLocalizedString([song valueForProperty:MPMediaItemPropertyArtist],@"artist")];
-        SongStruct *newSong = [[SongStruct alloc] initWithTitle:tempTitle artist:tempArtist voteCount:0 songURL:(NSURL *)[song valueForProperty:MPMediaItemPropertyAssetURL] artwork:[song valueForProperty:MPMediaItemPropertyArtwork]];
+        SongStruct *newSong = [[SongStruct alloc] initWithTitle:tempTitle artist:tempArtist voteCount:0 songURL:(NSURL *)[song valueForProperty:MPMediaItemPropertyAssetURL] artwork:[song valueForProperty:MPMediaItemPropertyArtwork] type:@"itunes"];
         [[[leftPanel QVC] myLibrary] addObject:newSong];
         NSLog (@"%@", tempTitle);
     }

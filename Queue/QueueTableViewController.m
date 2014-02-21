@@ -9,10 +9,8 @@
 #import "JASidePanelController.h"
 #import "UIViewController+JASidePanel.h"
 #import "QueueTableViewController.h"
-#import "BTLEViewController.h"
 #import "QueueViewController.h"
 #import "LeftPanelViewController.h"
-#import "MediaSourceViewController.h"
 
 
 @implementation QueueTableViewController
@@ -25,6 +23,7 @@
 @synthesize goToSC;
 @synthesize shadow;
 @synthesize selectionBox;
+@synthesize btController;
 
 - (IBAction) addHandler {
     
@@ -76,15 +75,31 @@
     NSLog(@"senderA");
     [shadow removeFromSuperview];
     [selectionBox removeFromSuperview];
-    [self performSegueWithIdentifier:@"librarySegue" sender:senderA];
+    if(!btController.rangingSwitch.on){
+        MPMediaPickerController *mediaPicker =
+        [[MPMediaPickerController alloc] initWithMediaTypes: MPMediaTypeAnyAudio];
+        
+        mediaPicker.delegate = self;
+        mediaPicker.allowsPickingMultipleItems = YES;
+        mediaPicker.prompt = NSLocalizedString (@"Add a song to the queue", @"Choose a song to add to the queue");
+        
+        
+        if ([self respondsToSelector:@selector(presentViewController:animated:completion:)]){
+            [self presentViewController:mediaPicker animated:YES completion:nil];
+        } else {
+            [self presentModalViewController:mediaPicker animated:YES];
+        }
+    }
+    
+    else{
+        [self performSegueWithIdentifier:@"LibrarySegue" sender:self];
+    }
 }
 
 -(void)goToSC:(id)senderB{
     NSLog(@"senderB");
-    [self performSegueWithIdentifier:@"SCSegue" sender:senderB];
+    [self performSegueWithIdentifier:@"SCSegue" sender:self];
 }
-
-
 
 //vote button for song
 -(void)upVote:(id)sender{
@@ -96,13 +111,11 @@
     [self.currentQueue reloadData];
     NSArray *tempArray = [[NSArray alloc] initWithObjects:temp, nil];
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:tempArray];
-    LeftPanelViewController *leftController = (LeftPanelViewController *)self.sidePanelController.leftPanel;
-    BTLEViewController *tempView = [leftController BTLE];
-    if(tempView.rangingSwitch.on && tempView.connectedPeer != nil){
-        [tempView sendData:data toPeers:[[NSArray alloc] initWithObjects:tempView.connectedPeer, nil] reliable:YES error:nil];
+    if(btController.rangingSwitch.on && btController.connectedPeer != nil){
+        [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:btController.connectedPeer, nil] reliable:YES error:nil];
     }
-    else if (tempView.advertisingSwitch.on){
-        [tempView sendData:data toPeers:[[NSArray alloc] initWithObjects:@"all",nil] reliable:YES error:nil];
+    else if (btController.advertisingSwitch.on){
+        [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:@"all",nil] reliable:YES error:nil];
     }
 }
 
@@ -110,16 +123,112 @@
 {
 
     [super viewDidLoad];
-    
-    //set addSongisPressed to false
-    addSongIsPressed = false;
 
+    //set addSongisPressed to false
+    self.addedSongs = [[NSMutableDictionary alloc] init];
+    addSongIsPressed = false;
+    LeftPanelViewController *leftController = (LeftPanelViewController *)self.sidePanelController.leftPanel;
+    btController = [leftController BTLE];
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
+}
+
+//library view controller for clients
+-(void)libraryViewController:(LibraryViewController *)libraryViewController didChooseSongs:(NSMutableArray *)songs
+{
+    if([songs count] > 0){
+        
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:songs];
+        [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:btController.connectedPeer, nil] reliable:YES error:nil];
+        for(SongStruct *tempSong in songs){
+            //QueueTable delegate method
+            [self addSong:tempSong];
+        }
+        
+    }
+    if ([self respondsToSelector:@selector(dismissModalViewControllerAnimated:)]) {
+        [self performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES]];
+    } else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+}
+
+//chose song from soundcloud. Clients and host
+-(void)youViewController:(SCYouViewController *)YouViewController didChooseSongs:(NSMutableArray *)songs
+{
+    if([songs count] > 0){
+        
+        for(SongStruct *tempSong in songs){
+            [self addSong:tempSong];
+        }
+        if(btController.advertisingSwitch.on){
+            NSData *data = [NSKeyedArchiver archivedDataWithRootObject:songs];
+            [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:@"all", nil] reliable:YES error:nil];
+        }
+        else if(btController.rangingSwitch.on){
+            NSData *data = [NSKeyedArchiver archivedDataWithRootObject:songs];
+            [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:btController.connectedPeer, nil] reliable:YES error:nil];
+        }
+        QueueViewController *mainView = [(LeftPanelViewController *)self.sidePanelController.leftPanel QVC];
+        [mainView updatePlayerQueueWithMediaCollection:songs];
+        
+    }
+    if ([self respondsToSelector:@selector(dismissModalViewControllerAnimated:)]) {
+        [self performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES]];
+    } else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+}
+
+// library view controller for host
+- (void) mediaPicker: (MPMediaPickerController *) mediaPicker didPickMediaItems: (MPMediaItemCollection *) mediaItemCollection {
+    //dismiss picker
+	if ([self respondsToSelector:@selector(dismissModalViewControllerAnimated:)]) {
+        [self performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES]];
+    } else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
+    //add the songs to our queue table view
+    for (int i = 0; i<mediaItemCollection.items.count; i++) {
+        NSString *tempTitle = [NSString stringWithFormat:NSLocalizedString([[mediaItemCollection.items objectAtIndex:i] valueForProperty:MPMediaItemPropertyTitle],@"title")];
+        NSString *tempArtist = [NSString stringWithFormat:NSLocalizedString([[mediaItemCollection.items objectAtIndex:i] valueForProperty:MPMediaItemPropertyArtist],@"artist")];
+        //note: Do not need buffer, url or album artwork for queue table. It is simply a list
+        SongStruct *newSong = [[SongStruct alloc] initWithTitle:tempTitle artist:tempArtist voteCount:1 songURL:nil artwork:nil type:@"itunes"];
+        [self addSong:newSong];
+        
+    }
+    if(!btController.rangingSwitch.on){
+        //get relevant data from songs and add them to the queue
+        NSMutableArray *songData = [[NSMutableArray alloc] init];
+        for(MPMediaItem *item in mediaItemCollection.items){
+            SongStruct *newSong = [[SongStruct alloc] initWithTitle:[item valueForProperty:MPMediaItemPropertyTitle] artist:[item valueForProperty:MPMediaItemPropertyArtist] voteCount:1 songURL:[item valueForProperty:MPMediaItemPropertyAssetURL] artwork:[item valueForProperty:MPMediaItemPropertyArtwork] type:@"itunes"];
+            NSLog(@"%@",[newSong mediaURL]);
+            NSLog(@"%@",[item valueForProperty:MPMediaItemPropertyTitle]);
+            //add song to queue table
+            [self addSong:newSong];
+            
+        }
+        
+        //if ranging switch is off, we are hosting a playlist.
+        //QueueViewController *mainView = [leftController QVC];
+        //add picked songs to our media queue
+        //[mainView updatePlayerQueueWithMediaCollection: songData];
+        //update playlist tables of all connected peers. They dont need the media data
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:songArray];
+        [btController sendData:data toPeers:[[NSArray alloc] initWithObjects:@"all", nil] reliable:YES error:nil];
+    }
+}
+
+-(void) mediaPickerDidCancel:(MPMediaPickerController *)mediaPicker{
+    if ([self respondsToSelector:@selector(dismissModalViewControllerAnimated:)]) {
+        [self performSelector:@selector(dismissModalViewControllerAnimated:) withObject:[NSNumber numberWithBool:YES]];
+    } else {
+        [self dismissViewControllerAnimated:YES completion:nil];
+    }
 }
 
 
@@ -210,19 +319,21 @@
 
 #pragma mark - Navigation
 
-// In a story board-based application, you will often want to do a little preparation before navigation
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
 {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    if([[segue identifier] isEqual:@"PickerSegue"]){
-        MediaSourceViewController *MSVC = segue.destinationViewController;
-        LeftPanelViewController *leftController = (LeftPanelViewController *)self.sidePanelController.leftPanel;
-        [MSVC setLeftController:leftController];
-        
+    // Make sure your segue name in storyboard is the same as this line
+    if ([[segue identifier] isEqualToString:@"LibrarySegue"])
+    {
+        UINavigationController *navController = segue.destinationViewController;
+        LibraryViewController *LVC = navController.viewControllers[0];
+        [LVC setLibraryDelegate:self];
+        [LVC setLibraryData:[btController hostLibrary]];
     }
-    else if([[segue identifier] isEqual:@"librarySegue"]){
-        LibraryViewController *LVC = segue.destinationViewController;
+    else if([[segue identifier] isEqualToString:@"SCSegue"]){
+        UITabBarController *tabController = segue.destinationViewController;
+        UINavigationController *navController = tabController.viewControllers[0];
+        SCYouViewController *youViewController = navController.viewControllers[0];
+        youViewController.delegate = self;
     }
 }
 
